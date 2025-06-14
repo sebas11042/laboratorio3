@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Aulas No Asignadas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">🏫 Aulas No Asignadas</h1>
+
+        <table class="table table-bordered table-hover table-dark">
+            <thead class="table-light text-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Capacidad</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-aulas"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function cargarAulasLibres() {
+            const tabla = document.getElementById('tabla-aulas');
+            tabla.innerHTML = "";
+
+            try {
+                const aulas = await fetch('/api/aulas/libres').then(res => res.json());
+                aulas.forEach(aula => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${aula.id}</td>
+                        <td>${aula.nombre}</td>
+                        <td>${aula.capacidad}</td>
+                    `;
+                    tabla.appendChild(fila);
+                });
+            } catch (error) {
+                console.error("Error al cargar aulas libres:", error);
+            }
+        }
+
+        cargarAulasLibres();
+    </script>
+</body>
+</html>

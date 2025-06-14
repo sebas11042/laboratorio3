@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Aulas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">🏫 Gestión de Aulas</h1>
+
+        <!-- LISTADO -->
+        <h4 class="text-light">Listado de Aulas</h4>
+        <table class="table table-bordered table-hover table-dark">
+            <thead class="table-light text-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Capacidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-aulas"></tbody>
+        </table>
+
+        <hr class="border-light">
+
+        <!-- FORMULARIO -->
+        <h4 class="text-light mt-4">Formulario de Aula</h4>
+        <form id="form-aula" class="bg-secondary p-4 rounded">
+            <input type="hidden" id="aulaId">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Aula</label>
+                <input type="text" class="form-control" id="nombre" required>
+            </div>
+            <div class="mb-3">
+                <label for="capacidad" class="form-label">Capacidad</label>
+                <input type="number" class="form-control" id="capacidad" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Guardar Aula</button>
+        </form>
+        <div id="mensaje" class="mt-4 text-center"></div>
+    </div>
+
+    <script>
+        async function cargarAulas() {
+            const tabla = document.getElementById('tabla-aulas');
+            tabla.innerHTML = "";
+            try {
+                const aulas = await fetch('/api/aulas').then(res => res.json());
+                aulas.forEach(aula => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                            <td>${aula.id}</td>
+                            <td>${aula.nombre}</td>
+                            <td>${aula.capacidad}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-2" onclick="editarAula(${aula.id})">✏️</button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarAula(${aula.id})">🗑</button>
+                            </td>
+                        `;
+                    tabla.appendChild(fila);
+                });
+            } catch (error) {
+                console.error("Error al cargar aulas:", error);
+            }
+        }
+
+        document.getElementById('form-aula').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const id = document.getElementById('aulaId').value;
+            const nombre = document.getElementById('nombre').value;
+            const capacidad = parseInt(document.getElementById('capacidad').value);
+
+            const body = JSON.stringify({ id, nombre, capacidad });
+            const mensaje = document.getElementById('mensaje');
+
+            try {
+                const response = await fetch(`/api/aulas${id ? `/${id}` : ''}`, {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
+                });
+
+                if (response.ok) {
+                    mensaje.innerHTML = `<div class="alert alert-success">Aula ${id ? 'actualizada' : 'registrada'} correctamente ✅</div>`;
+                    this.reset();
+                    cargarAulas();
+                } else {
+                    mensaje.innerHTML = `<div class="alert alert-danger">Error al ${id ? 'actualizar' : 'registrar'} el aula ❌</div>`;
+                }
+            } catch (error) {
+                console.error("Error al guardar aula:", error);
+            }
+        });
+
+        async function eliminarAula(id) {
+            if (!confirm("¿Deseas eliminar esta aula?")) return;
+
+            try {
+                const response = await fetch(`/api/aulas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert("Aula eliminada correctamente ✅");
+                    cargarAulas();
+                } else {
+                    alert("Error al eliminar aula ❌");
+                }
+            } catch (error) {
+                console.error("Error al eliminar aula:", error);
+            }
+        }
+
+        async function editarAula(id) {
+            try {
+                const aula = await fetch(`/api/aulas/${id}`).then(res => res.json());
+
+                document.getElementById('aulaId').value = aula.id;
+                document.getElementById('nombre').value = aula.nombre;
+                document.getElementById('capacidad').value = aula.capacidad;
+            } catch (error) {
+                console.error("Error al cargar aula para edición:", error);
+            }
+        }
+
+        cargarAulas();
+    </script>
+</body>
+</html>

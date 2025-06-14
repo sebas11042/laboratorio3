@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Cursos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">📚 Gestión de Cursos</h1>
+
+        <!-- LISTADO -->
+        <h4 class="text-light">Listado de Cursos</h4>
+
+        <!-- BUSCADOR -->
+        <div class="mb-3">
+            <input type="text" class="form-control" id="busqueda" placeholder="🔍 Buscar curso por nombre...">
+        </div>
+
+        <table class="table table-bordered table-hover table-dark">
+            <thead class="table-light text-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cupo</th>
+                    <th>Profesor</th>
+                    <th>Aula</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-cursos"></tbody>
+        </table>
+
+        <hr class="border-light">
+
+        <!-- FORMULARIO -->
+        <h4 class="text-light mt-4">Formulario de Curso</h4>
+        <form id="form-curso" class="bg-secondary p-4 rounded">
+            <input type="hidden" id="cursoId">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Curso</label>
+                <input type="text" class="form-control" id="nombre" required>
+            </div>
+            <div class="mb-3">
+                <label for="cupo" class="form-label">Cupo</label>
+                <input type="number" class="form-control" id="cupo" required>
+            </div>
+            <div class="mb-3">
+                <label for="profesorId" class="form-label">Profesor</label>
+                <select class="form-control" id="profesorId" required></select>
+            </div>
+            <div class="mb-3">
+                <label for="aulaId" class="form-label">Aula</label>
+                <select class="form-control" id="aulaId" required></select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Guardar Curso</button>
+        </form>
+        <div id="mensaje" class="mt-4 text-center"></div>
+    </div>
+
+    <script>
+        async function cargarOpciones() {
+            const profesorSelect = document.getElementById('profesorId');
+            const aulaSelect = document.getElementById('aulaId');
+
+            try {
+                const profesores = await fetch('/api/profesores').then(res => res.json());
+                const aulas = await fetch('/api/aulas').then(res => res.json());
+
+                profesorSelect.innerHTML = '<option value="">Seleccione un profesor</option>';
+                aulaSelect.innerHTML = '<option value="">Seleccione un aula</option>';
+
+                profesores.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.nombre;
+                    profesorSelect.appendChild(opt);
+                });
+
+                aulas.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.id;
+                    opt.textContent = a.nombre;
+                    aulaSelect.appendChild(opt);
+                });
+
+            } catch (error) {
+                console.error("Error al cargar opciones:", error);
+            }
+        }
+
+        async function cargarCursos() {
+            const tabla = document.getElementById('tabla-cursos');
+            tabla.innerHTML = "";
+
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+
+                cursos.forEach(curso => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${curso.nombre}</td>
+                        <td>${curso.cupo}</td>
+                        <td>${curso.profesor?.nombre || 'No asignado'}</td>
+                        <td>${curso.aula?.nombre || 'No asignado'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-2" onclick="editarCurso(${curso.id})">✏️</button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarCurso(${curso.id})">🗑</button>
+                        </td>
+                    `;
+                    tabla.appendChild(fila);
+                });
+
+            } catch (error) {
+                console.error("Error al cargar cursos:", error);
+            }
+        }
+
+        document.getElementById('form-curso').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById('cursoId').value;
+            const nombre = document.getElementById('nombre').value;
+            const cupo = parseInt(document.getElementById('cupo').value);
+            const profesorId = parseInt(document.getElementById('profesorId').value);
+            const aulaId = parseInt(document.getElementById('aulaId').value);
+
+            const body = JSON.stringify({ id, nombre, cupo, profesorId, aulaId });
+            const mensaje = document.getElementById('mensaje');
+
+            try {
+                const response = await fetch(`/api/cursos${id ? `/${id}` : ''}`, {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
+                });
+
+                if (response.ok) {
+                    mensaje.innerHTML = `<div class="alert alert-success">Curso ${id ? 'actualizado' : 'registrado'} correctamente ✅</div>`;
+                    this.reset();
+                    await cargarCursos();
+                } else {
+                    mensaje.innerHTML = `<div class="alert alert-danger">Error al ${id ? 'actualizar' : 'registrar'} el curso ❌</div>`;
+                }
+            } catch (error) {
+                console.error("Error al guardar curso:", error);
+            }
+        });
+
+        async function eliminarCurso(id) {
+            if (!confirm("¿Deseas eliminar este curso?")) return;
+
+            try {
+                const response = await fetch(`/api/cursos/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert("Curso eliminado correctamente ✅");
+                    await cargarCursos();
+                } else {
+                    alert("Error al eliminar curso ❌");
+                }
+            } catch (error) {
+                console.error("Error al eliminar:", error);
+            }
+        }
+
+        async function editarCurso(id) {
+            try {
+                const curso = await fetch(`/api/cursos/${id}`).then(res => res.json());
+
+                document.getElementById('cursoId').value = curso.id;
+                document.getElementById('nombre').value = curso.nombre;
+                document.getElementById('cupo').value = curso.cupo;
+                document.getElementById('profesorId').value = curso.profesorId;
+                document.getElementById('aulaId').value = curso.aulaId;
+            } catch (error) {
+                console.error("Error al cargar curso para edición:", error);
+            }
+        }
+
+        // Buscador en tiempo real por nombre
+        document.getElementById('busqueda').addEventListener('input', function () {
+            const filtro = this.value.toLowerCase();
+            const filas = document.querySelectorAll('#tabla-cursos tr');
+
+            filas.forEach(fila => {
+                const nombreCurso = fila.children[0]?.textContent.toLowerCase() || "";
+                fila.style.display = nombreCurso.includes(filtro) ? '' : 'none';
+            });
+        });
+
+        cargarOpciones();
+        cargarCursos();
+    </script>
+</body>
+</html>
