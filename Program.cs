@@ -20,6 +20,10 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// 🔥 Esta línea permite que Render sepa en qué puerto escuchar
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://*:{port}");
+
 // Mostrar detalles de errores en desarrollo
 if (app.Environment.IsDevelopment())
 {
