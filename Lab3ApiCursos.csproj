@@ -7,11 +7,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\favicon.ico" />
+    <None Include="wwwroot\index.html" />
+    <None Include="wwwroot\logo192.png" />
+    <None Include="wwwroot\logo512.png" />
+    <None Include="wwwroot\robots.txt" />
+    <None Include="wwwroot\static\css\main.e6c13ad2.css" />
+    <None Include="wwwroot\static\css\main.e6c13ad2.css.map" />
+    <None Include="wwwroot\static\js\453.8ab44547.chunk.js" />
+    <None Include="wwwroot\static\js\453.8ab44547.chunk.js.map" />
+    <None Include="wwwroot\static\js\main.57e579a5.js" />
+    <None Include="wwwroot\static\js\main.57e579a5.js.LICENSE.txt" />
+    <None Include="wwwroot\static\js\main.57e579a5.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="frontend\build\" />
   </ItemGroup>
 
 </Project>
