@@ -68,18 +68,20 @@
 
         document.getElementById('form-aula').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const id = document.getElementById('aulaId').value;
-            const nombre = document.getElementById('nombre').value;
+            const id = document.getElementById('aulaId').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
             const capacidad = parseInt(document.getElementById('capacidad').value);
-
-            const body = JSON.stringify({ id, nombre, capacidad });
             const mensaje = document.getElementById('mensaje');
+
+            // Construir el objeto aula
+            const aula = { nombre, capacidad };
+            if (id !== "") aula.id = parseInt(id);
 
             try {
                 const response = await fetch(`/api/aulas${id ? `/${id}` : ''}`, {
                     method: id ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: body
+                    body: JSON.stringify(aula)
                 });
 
                 if (response.ok) {
@@ -98,9 +100,7 @@
             if (!confirm("¿Deseas eliminar esta aula?")) return;
 
             try {
-                const response = await fetch(`/api/aulas/${id}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`/api/aulas/${id}`, { method: 'DELETE' });
 
                 if (response.ok) {
                     alert("Aula eliminada correctamente ✅");
