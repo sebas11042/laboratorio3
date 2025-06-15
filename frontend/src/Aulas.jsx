@@ -23,19 +23,31 @@ export default function Aulas() {
         e.preventDefault();
         const metodo = form.id ? 'PUT' : 'POST';
         const url = `https://laboratorio3-ngo0.onrender.com/api/aulas${form.id ? `/${form.id}` : ''}`;
+
+        // Convertimos capacidad a número
+        const aulaData = {
+            ...form,
+            capacidad: parseInt(form.capacidad) || 0
+        };
+
         const options = {
             method: metodo,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(form)
+            body: JSON.stringify(aulaData)
         };
 
-        const res = await fetch(url, options);
-        if (res.ok) {
-            setMensaje(`✅ Aula ${form.id ? 'actualizada' : 'registrada'} correctamente`);
-            setForm({ id: '', nombre: '', capacidad: '' });
-            cargarAulas();
-        } else {
-            setMensaje('❌ Error al guardar el aula');
+        try {
+            const res = await fetch(url, options);
+            if (res.ok) {
+                setMensaje(`✅ Aula ${form.id ? 'actualizada' : 'registrada'} correctamente`);
+                setForm({ id: '', nombre: '', capacidad: '' });
+                cargarAulas();
+            } else {
+                setMensaje('❌ Error al guardar el aula');
+            }
+        } catch (error) {
+            console.error('Error en la petición:', error);
+            setMensaje('❌ Error en la conexión con el servidor');
         }
     };
 
@@ -45,9 +57,15 @@ export default function Aulas() {
 
     const eliminar = async (id) => {
         if (!window.confirm('¿Eliminar esta aula?')) return;
-        const res = await fetch(`https://laboratorio3-ngo0.onrender.com/api/aulas/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-            cargarAulas();
+        try {
+            const res = await fetch(`https://laboratorio3-ngo0.onrender.com/api/aulas/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                cargarAulas();
+            }
+        } catch (error) {
+            console.error('Error al eliminar aula:', error);
         }
     };
 
@@ -55,7 +73,7 @@ export default function Aulas() {
         <div className="container mt-4">
             <h2>🏫 Listado de Aulas</h2>
             <table className="table table-bordered table-hover">
-                <thead>
+                <thead className="table-dark">
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>

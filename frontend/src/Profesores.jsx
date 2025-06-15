@@ -7,9 +7,11 @@ const Profesores = () => {
     const [id, setId] = useState(null);
     const [mensaje, setMensaje] = useState("");
 
+    const API_URL = "https://laboratorio3-ngo0.onrender.com/api/profesores";
+
     const cargarProfesores = async () => {
         try {
-            const res = await fetch("/api/profesores");
+            const res = await fetch(API_URL);
             const data = await res.json();
             setProfesores(data);
         } catch (err) {
@@ -23,12 +25,16 @@ const Profesores = () => {
 
     const guardarProfesor = async (e) => {
         e.preventDefault();
-        const body = JSON.stringify({ id, nombre, especialidad });
+        const profesorData = {
+            id,
+            nombre: nombre.trim(),
+            especialidad: especialidad.trim()
+        };
 
-        const response = await fetch(`/api/profesores${id ? `/${id}` : ""}`, {
+        const response = await fetch(`${API_URL}${id ? `/${id}` : ""}`, {
             method: id ? "PUT" : "POST",
             headers: { "Content-Type": "application/json" },
-            body: body,
+            body: JSON.stringify(profesorData),
         });
 
         if (response.ok) {
@@ -39,6 +45,7 @@ const Profesores = () => {
             cargarProfesores();
         } else {
             setMensaje("❌ Error al guardar profesor");
+            console.error("Error detalle:", await response.text());
         }
     };
 
@@ -50,7 +57,7 @@ const Profesores = () => {
 
     const eliminarProfesor = async (id) => {
         if (!window.confirm("¿Deseas eliminar este profesor?")) return;
-        const res = await fetch(`/api/profesores/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
         if (res.ok) {
             cargarProfesores();
         }
@@ -87,7 +94,7 @@ const Profesores = () => {
 
             <h4 className="mt-4">Formulario de Profesor</h4>
             <form onSubmit={guardarProfesor} className="bg-secondary p-4 rounded">
-                <input type="hidden" value={id} />
+                <input type="hidden" value={id || ""} />
                 <div className="mb-3">
                     <label className="form-label">Nombre</label>
                     <input className="form-control" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
@@ -97,7 +104,7 @@ const Profesores = () => {
                     <input className="form-control" value={especialidad} onChange={(e) => setEspecialidad(e.target.value)} required />
                 </div>
                 <button type="submit" className="btn btn-primary w-100">Guardar</button>
-                <div className="mt-3 text-center">{mensaje}</div>
+                {mensaje && <div className="alert alert-info mt-3">{mensaje}</div>}
             </form>
         </div>
     );
