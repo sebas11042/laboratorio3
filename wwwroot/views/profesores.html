@@ -72,7 +72,10 @@
             const nombre = document.getElementById('nombre').value;
             const especialidad = document.getElementById('especialidad').value;
 
-            const body = JSON.stringify({ id, nombre, especialidad });
+            const profesorData = { nombre, especialidad };
+            if (id) profesorData.id = parseInt(id);
+
+            const body = JSON.stringify(profesorData);
             const mensaje = document.getElementById('mensaje');
 
             try {
@@ -93,6 +96,7 @@
                 console.error("Error al guardar profesor:", error);
             }
         });
+
 
         async function eliminarProfesor(id) {
             if (!confirm("¿Deseas eliminar este profesor?")) return;
