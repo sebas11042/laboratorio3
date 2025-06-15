@@ -21,13 +21,19 @@ export default function Aulas() {
 
     const guardarAula = async (e) => {
         e.preventDefault();
+
+        // Validación básica
+        if (!form.nombre.trim() || isNaN(parseInt(form.capacidad))) {
+            setMensaje("❌ El nombre y la capacidad deben ser válidos");
+            return;
+        }
+
         const metodo = form.id ? 'PUT' : 'POST';
         const url = `https://laboratorio3-ngo0.onrender.com/api/aulas${form.id ? `/${form.id}` : ''}`;
 
-        // Convertimos capacidad a número
         const aulaData = {
             ...form,
-            capacidad: parseInt(form.capacidad) || 0
+            capacidad: Number(form.capacidad)
         };
 
         const options = {
@@ -43,13 +49,16 @@ export default function Aulas() {
                 setForm({ id: '', nombre: '', capacidad: '' });
                 cargarAulas();
             } else {
+                const errorDetail = await res.text();
+                console.error("❌ Detalle del error:", errorDetail);
                 setMensaje('❌ Error al guardar el aula');
             }
         } catch (error) {
-            console.error('Error en la petición:', error);
+            console.error('❌ Error en la petición:', error);
             setMensaje('❌ Error en la conexión con el servidor');
         }
     };
+
 
     const editar = (aula) => {
         setForm(aula);
