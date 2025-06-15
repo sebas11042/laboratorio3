@@ -125,7 +125,10 @@
             const profesorId = parseInt(document.getElementById('profesorId').value);
             const aulaId = parseInt(document.getElementById('aulaId').value);
 
-            const body = JSON.stringify({ id, nombre, cupo, profesorId, aulaId });
+            const cursoData = { nombre, cupo, profesorId, aulaId };
+            if (id) cursoData.id = parseInt(id);
+
+            const body = JSON.stringify(cursoData);
             const mensaje = document.getElementById('mensaje');
 
             try {
@@ -146,6 +149,7 @@
                 console.error("Error al guardar curso:", error);
             }
         });
+
 
         async function eliminarCurso(id) {
             if (!confirm("¿Deseas eliminar este curso?")) return;
